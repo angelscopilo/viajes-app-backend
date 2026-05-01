@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Viajes App - Backend Tester</title>
+  <style>
+    body { font-family: Arial; margin: 20px; background: #f4f4f4; }
+    .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
+    input, button { padding: 10px; margin: 5px; width: 100%; }
+    button { background: #007bff; color: white; border: none; cursor: pointer; }
+    pre { background: #eee; padding: 10px; border-radius: 5px; overflow: auto; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Viajes App - Backend Tester</h1>
+
+    <h2>1. Registro</h2>
+    <input type="text" id="reg_name" placeholder="Nombre" value="Gil Rodriguez">
+    <input type="email" id="reg_email" placeholder="Email" value="gilrminuto+test@gmail.com">
+    <input type="password" id="reg_pass" placeholder="Contraseña" value="Prueba2026!">
+    <select id="reg_role">
+      <option value="organizer">Organizador</option>
+      <option value="client">Cliente</option>
+    </select>
+    <button onclick="register()">Registrar Usuario</button>
+
+    <h2>2. Login</h2>
+    <input type="email" id="login_email" placeholder="Email" value="gilrminuto+test@gmail.com">
+    <input type="password" id="login_pass" placeholder="Contraseña" value="Prueba2026!">
+    <button onclick="login()">Iniciar Sesión</button>
+
+    <div id="token"></div>
+
+    <h2>3. Crear Viaje</h2>
+    <button onclick="createTrip()">Crear Viaje de Prueba</button>
+
+    <pre id="result"></pre>
+  </div>
+
+  <script>
+    let token = '';
+
+    async function register() {
+      const data = {
+        name: document.getElementById('reg_name').value,
+        email: document.getElementById('reg_email').value,
+        password: document.getElementById('reg_pass').value,
+        role: document.getElementById('reg_role').value
+      };
+      const res = await fetch('/api/auth/register', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
+      const json = await res.json();
+      document.getElementById('result').textContent = JSON.stringify(json, null, 2);
+    }
+
+    async function login() {
+      const data = {
+        email: document.getElementById('login_email').value,
+        password: document.getElementById('login_pass').value
+      };
+      const res = await fetch('/api/auth/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
+      const json = await res.json();
+      document.getElementById('result').textContent = JSON.stringify(json, null, 2);
+      if (json.token) {
+        token = json.token;
+        document.getElementById('token').innerHTML = `<strong>Token guardado</strong>`;
+      }
+    }
+
+    async function createTrip() {
+      if (!token) return alert("Primero inicia sesión");
+      const data = {
+        title: "Viaje de Prueba a Cancún",
+        destination: "Cancún, Quintana Roo",
+        start_date: "2026-06-01",
+        end_date: "2026-06-08",
+        deposit_amount: 8500
+      };
+      const res = await fetch('/api/trips', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(data)
+      });
+      const json = await res.json();
+      document.getElementById('result').textContent = JSON.stringify(json, null, 2);
+    }
+  </script>
+</body>
+</html>
